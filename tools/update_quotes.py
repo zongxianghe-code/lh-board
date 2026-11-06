@@ -63,12 +63,12 @@ def parse_lh(code: str, s: str) -> dict | None:
     ask = fnum(p[7])
     settle = fnum(p[9]) if len(p) > 9 else 0.0
     prev = fnum(p[10]) if len(p) > 10 else 0.0
-    # Prefer yesterday settle for change; fall back to prev / open
-    base = settle or prev or open_ or last
+    # 涨跌相对昨结(prev)；p[13]=持仓 oi，p[14]=成交 volume（与新浪商品期货字段一致）
+    base = prev or settle or open_ or last
     change = last - base if base else 0.0
     change_pct = (change / base * 100.0) if base else 0.0
-    volume = fnum(p[13]) if len(p) > 13 else 0.0
-    oi = fnum(p[14]) if len(p) > 14 else 0.0
+    oi = fnum(p[13]) if len(p) > 13 else 0.0
+    volume = fnum(p[14]) if len(p) > 14 else 0.0
     date = (p[17] if len(p) > 17 else "").strip()
     traw = (p[1] if len(p) > 1 else "").strip().zfill(6)
     time_s = f"{traw[0:2]}:{traw[2:4]}:{traw[4:6]}" if len(traw) >= 6 else traw

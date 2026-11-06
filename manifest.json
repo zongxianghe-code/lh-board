@@ -1,0 +1,9 @@
+{
+  "name": "生猪 LH",
+  "short_name": "生猪LH",
+  "start_url": "./?v=202611061718",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220"
+}

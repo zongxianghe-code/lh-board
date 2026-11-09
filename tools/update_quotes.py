@@ -55,7 +55,8 @@ def parse_lh(code: str, s: str) -> dict | None:
     p = s.split(",")
     if len(p) < 15:
         return None
-    last = fnum(p[5])
+    # p[5]=收盘 (0 during session), p[8]=最新价
+    last = fnum(p[5]) or (fnum(p[8]) if len(p) > 8 else 0.0)
     open_ = fnum(p[2])
     high = fnum(p[3])
     low = fnum(p[4])

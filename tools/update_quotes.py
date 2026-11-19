@@ -20,7 +20,7 @@ CODES = [f"nf_LH{m}" for m in MONTHS] + ["nf_LH0"]
 POSITION = {
     "symbol": "LH2705",
     "side": "long",
-    "lots": 7,
+    "lots": 2,  # 原 7 手，2026-11-19 卖平 5 手后剩 2 手（页面以 index.html 常量为准）
     "cost": 12000,  # 元/吨
     "multiplier": 16,  # 吨/手
 }

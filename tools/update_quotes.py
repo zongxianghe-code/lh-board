@@ -17,13 +17,11 @@ TZ = ZoneInfo("Asia/Shanghai")
 MONTHS = ["2611", "2701", "2703", "2705", "2707", "2709"]
 CODES = [f"nf_LH{m}" for m in MONTHS] + ["nf_LH0"]
 
-POSITION = {
-    "symbol": "LH2705",
-    "side": "long",
-    "lots": 2,  # 原 7 手，2026-11-19 卖平 5 手后剩 2 手（页面以 index.html 常量为准）
-    "cost": 12000,  # 元/吨
-    "multiplier": 16,  # 吨/手
-}
+# 页面持仓以 index.html 的 POSITIONS 常量为准；这里写入 quotes.json 供备份/兼容
+POSITIONS = [
+    {"symbol": "LH2705", "side": "long", "lots": 1, "cost": 10270, "multiplier": 16},
+    {"symbol": "LH2703", "side": "long", "lots": 1, "cost": 9170, "multiplier": 16},
+]
 
 
 def fetch(lst: str) -> str:
@@ -119,20 +117,21 @@ def main() -> None:
                 c["isMain"] = c["symbol"] == "LH2701"
 
     for c in contracts:
-        c["isPosition"] = c["symbol"] == POSITION["symbol"]
+        c["isPosition"] = c["symbol"] in {p["symbol"] for p in POSITIONS}
 
     now = datetime.now(TZ)
     payload = {
         "updatedAt": now.strftime("%Y-%m-%d %H:%M:%S") + " Asia/Shanghai",
         "source": "sina",
         "contracts": contracts,
-        "position": POSITION,
+        "positions": POSITIONS,
+        "position": POSITIONS[0],
     }
     OUT.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     marks = {c["symbol"]: c["last"] for c in contracts}
     print(
         f"ok {OUT} updatedAt={payload['updatedAt']} n={len(contracts)} "
-        f"LH2701={marks.get('LH2701')} LH2705={marks.get('LH2705')}"
+        f"LH2701={marks.get('LH2701')} LH2703={marks.get('LH2703')} LH2705={marks.get('LH2705')}"
     )
 
 

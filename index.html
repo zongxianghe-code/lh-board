@@ -10,7 +10,7 @@
 <meta http-equiv="Expires" content="0"/>
 <meta name="apple-mobile-web-app-title" content="生猪LH"/>
 <title>生猪 LH</title>
-<link rel="manifest" href="manifest.json?v=202611191415"/>
+<link rel="manifest" href="manifest.json?v=202611201030"/>
 <style>
 :root{--bg:#0b1220;--card:#162033;--text:#eef3fb;--muted:#9aa8bf;--win:#3dd68c;--loss:#f07178;--warn:#ffb454;--line:#2a3a55;--accent:#59a5ff;--blue:#3b82f6;--head:#1a2740;--sug:#f07178}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -61,7 +61,7 @@ svg.curve{width:100%;height:auto;display:block;background:#0f1828;border-radius:
 <div class="card" id="posCard"></div>
 <div class="card">
   <h2>合约行情</h2>
-  <div class="tiny">红底 = 持仓 LH2705 · 蓝底 = 主力 LH2701</div>
+  <div class="tiny">红底 = 持仓 LH2703 / LH2705 · 蓝底 = 主力 LH2701</div>
   <div class="scrollx"><table class="chain">
     <thead><tr><th>合约</th><th>最新</th><th>涨跌</th><th>开</th><th>高</th><th>低</th><th>量</th><th>仓</th><th>买/卖</th></tr></thead>
     <tbody id="tb"></tbody>
@@ -75,32 +75,49 @@ svg.curve{width:100%;height:auto;display:block;background:#0f1828;border-radius:
 <div class="card note">联动「生猪期货相关」日简报；本页仅展示行情与持仓浮盈，非投资建议。</div>
 
 <script>
-const APP_VER='202611191415';
+const APP_VER='202611201030';
 const FALLBACK={
   updatedAt:'2026-11-06 15:05 Asia/Shanghai',
   source:'cache',
   contracts:[
     {symbol:'LH2611',last:8045,open:8035,high:8045,low:8035,settle:8040,change:5,changePct:0.06,volume:32,oi:2,bid:8000,ask:8500,isMain:false,isPosition:false},
     {symbol:'LH2701',last:9195,open:9115,high:9250,low:9060,settle:9175,change:20,changePct:0.22,volume:173362,oi:142944,bid:9190,ask:9195,isMain:true,isPosition:false},
-    {symbol:'LH2703',last:9160,open:9060,high:9195,low:9035,settle:9135,change:25,changePct:0.27,volume:161150,oi:62419,bid:9160,ask:9165,isMain:false,isPosition:false},
+    {symbol:'LH2703',last:9160,open:9060,high:9195,low:9035,settle:9135,change:25,changePct:0.27,volume:161150,oi:62419,bid:9160,ask:9165,isMain:false,isPosition:true},
     {symbol:'LH2705',last:10065,open:10030,high:10125,low:9980,settle:10050,change:15,changePct:0.15,volume:63780,oi:20289,bid:10055,ask:10065,isMain:false,isPosition:true},
     {symbol:'LH2707',last:11220,open:11285,high:11350,low:11170,settle:11230,change:-10,changePct:-0.09,volume:44765,oi:10575,bid:11215,ask:11220,isMain:false,isPosition:false},
     {symbol:'LH2709',last:12315,open:12450,high:12490,low:12250,settle:12345,change:-30,changePct:-0.24,volume:40103,oi:13801,bid:12315,ask:12320,isMain:false,isPosition:false},
     {symbol:'LH0',last:9195,open:9115,high:9250,low:9060,settle:9175,change:20,changePct:0.22,volume:173362,oi:142944,bid:9190,ask:9195,isMain:false,isPosition:false}
   ],
-  position:{symbol:'LH2705',side:'long',lots:2,cost:12000,multiplier:16}
+  position:{symbol:'LH2705',side:'long',lots:1,cost:10270,multiplier:16},
+  positions:[
+    {symbol:'LH2705',side:'long',lots:1,cost:10270,multiplier:16},
+    {symbol:'LH2703',side:'long',lots:1,cost:9170,multiplier:16}
+  ]
 };
-/** 持仓以页面常量为准（不再读 quotes.json 的 position，避免脚本滞后）。原多 7 手 @12000，2026-11-19 卖平 5 手后剩 2 手 */
-const POSITION={symbol:'LH2705',side:'long',lots:2,cost:12000,multiplier:16};
+
+/** 持仓以页面常量为准（不读 quotes.json 的 position，避免脚本滞后）。
+ *  原 LH2705 多 7 手 @12000；2026-11-19 卖平 5 手，2026-11-20 余 2 手按 10370 平完，
+ *  再开 LH2705 多 1 手 @10270、LH2703 多 1 手 @9170。 */
+const POSITIONS=[
+  {symbol:'LH2705',side:'long',lots:1,cost:10270,multiplier:16},
+  {symbol:'LH2703',side:'long',lots:1,cost:9170,multiplier:16},
+];
+const POS_SYMS=new Set(POSITIONS.map(p=>p.symbol));
+function isHeld(sym){return POS_SYMS.has(sym);}
+function applyHeldFlags(){for(const c of (snap.contracts||[])) c.isPosition=isHeld(c.symbol);}
 /** 已平仓记录（北京时间；只追加） */
 const CLOSED=[
   {date:'2026-11-19', time:'11:16:45', symbol:'LH2705', side:'long', cost:12000, lots:1, exit:10370},
   {date:'2026-11-19', time:'11:16:45', symbol:'LH2705', side:'long', cost:12000, lots:2, exit:10370},
   {date:'2026-11-19', time:'11:16:45', symbol:'LH2705', side:'long', cost:12000, lots:1, exit:10375},
   {date:'2026-11-19', time:'11:16:45', symbol:'LH2705', side:'long', cost:12000, lots:1, exit:10375},
+  {date:'2026-11-20', time:'10:11', symbol:'LH2705', side:'long', cost:12000, lots:2, exit:10370},
 ];
-function realizedOf(T){const m=POSITION.multiplier||16;return Math.round((T.side==='long'?1:-1)*(T.exit-T.cost)*T.lots*m);}
+function realizedOf(T){const m=T.multiplier||16;return Math.round((T.side==='long'?1:-1)*(T.exit-T.cost)*T.lots*m);}
 function realizedTotal(){return CLOSED.reduce((a,T)=>a+realizedOf(T),0);}
+function markOf(pos){const c=bySym(pos.symbol);return c&&c.last?c.last:null;}
+function floatOf(pos){const mark=markOf(pos);if(mark==null) return null;const m=pos.multiplier||16;return (pos.side==='long'?1:-1)*(mark-pos.cost)*m*pos.lots;}
+function floatTotal(){let s=0,ok=false;for(const p of POSITIONS){const v=floatOf(p);if(v!=null){s+=v;ok=true;}}return ok?s:null;}
 let snap=JSON.parse(JSON.stringify(FALLBACK)), live=false, timer=null;
 
 function yen(n){const neg=n<0;const s=Math.round(Math.abs(n)).toLocaleString('en-US');return (neg?'-':'')+'¥'+s;}
@@ -136,32 +153,34 @@ function setStatus(extra){
 }
 
 function renderPos(){
-  const pos=POSITION;
-  const c=bySym(pos.symbol);
-  const mark=c&&c.last?c.last:null;
-  const mult=pos.multiplier||16, lots=pos.lots, cost=pos.cost;
-  const pnl=mark!=null?(mark-cost)*mult*lots:null;
-  const per100=100*mult*lots;
+  applyHeldFlags();
+  const rows=POSITIONS.map(pos=>{
+    const mark=markOf(pos);
+    const pnl=floatOf(pos);
+    const cls=pnl==null?'':(pnl>=0?'win':'loss');
+    const sideTxt=pos.side==='long'?'多':'空';
+    return `<div class="row"><span>合约</span><strong>${pos.symbol} <span class="pill pos">${sideTxt} ${pos.lots} 手</span></strong></div>
+    <div class="row"><span>成本 / 标记</span><strong>${fmt(pos.cost,0)} / ${mark!=null?fmt(mark,0):'—'} 元/吨</strong></div>
+    <div class="row"><span>未实现盈亏</span><strong class="${cls}">${pnl==null?'—':yen(pnl)}</strong></div>`;
+  }).join('');
+  const pnl=floatTotal();
   const cls=pnl==null?'':(pnl>=0?'win':'loss');
-  const sideTxt=pos.side==='long'?'多':'空';
+  const combined=pnl==null?realizedTotal():pnl+realizedTotal();
   document.getElementById('posCard').innerHTML=`
     <h2>现有持仓</h2>
-    <div class="row"><span>合约</span><strong>${pos.symbol} <span class="pill pos">${sideTxt} ${lots} 手</span></strong></div>
-    <div class="row"><span>成本</span><strong>${fmt(cost,0)} 元/吨</strong></div>
-    <div class="row"><span>标记（最新）</span><strong>${mark!=null?fmt(mark,0):'—'} 元/吨</strong></div>
-    <div class="row"><span>合约乘数</span><span>${mult} 吨/手</span></div>
-    <div class="row"><span>未实现盈亏</span><strong class="${cls}">${pnl==null?'—':yen(pnl)}</strong></div>
+    ${rows}
+    <div class="row"><span>未实现合计</span><strong class="${cls}">${pnl==null?'—':yen(pnl)}</strong></div>
     <div class="row"><span>累计已实现（已平 ${CLOSED.reduce((a,T)=>a+T.lots,0)} 手）</span><strong class="${realizedTotal()>=0?'win':'loss'}">${yen(realizedTotal())}</strong></div>
-    <div class="row"><span>合计（已实现+浮动）</span><strong class="${(pnl==null?realizedTotal():pnl+realizedTotal())>=0?'win':'loss'}">${pnl==null?'—':yen(pnl+realizedTotal())}</strong></div>
-    ${CLOSED.map(T=>`<div class="row"><span class="tiny">${T.date} ${T.time} 卖平 ${T.lots} 手</span><span class="tiny">开 ${T.cost} · 平 ${T.exit} · <strong class="${realizedOf(T)>=0?'win':'loss'}">${yen(realizedOf(T))}</strong></span></div>`).join('')}
-    <div class="note">公式：(标记 − ${cost}) × ${mult} × ${lots}。每涨跌 100 元/吨 ≈ ${yen(per100)}（${lots} 手）。</div>`;
+    <div class="row"><span>合计（已实现+浮动）</span><strong class="${combined>=0?'win':'loss'}">${yen(combined)}</strong></div>
+    ${CLOSED.map(T=>`<div class="row"><span class="tiny">${T.date} ${T.time} 卖平 ${T.symbol} ${T.lots} 手</span><span class="tiny">开 ${T.cost} · 平 ${T.exit} · <strong class="${realizedOf(T)>=0?'win':'loss'}">${yen(realizedOf(T))}</strong></span></div>`).join('')}
+    <div class="note">公式：(标记 − 成本) × 16 吨/手 × 手数。每笔每涨跌 100 元/吨 ≈ ¥1,600。</div>`;
 
   const main=bySym('LH2701')||(snap.contracts||[]).find(x=>x.isMain);
   document.getElementById('hero').innerHTML=`
     <div class="card"><div class="k">主力 LH2701</div><div class="v">${main?fmt(main.last,0):'—'}</div>
       <div class="tiny chg ${main&&main.change>=0?'up':'down'}">${main?(main.change>=0?'+':'')+fmt(main.change,0)+' · '+(main.changePct>=0?'+':'')+fmt(main.changePct,2)+'%':''}</div></div>
-    <div class="card"><div class="k">持仓 LH2705 浮盈</div><div class="v ${cls}">${pnl==null?'—':yen(pnl)}</div>
-      <div class="tiny">标记 ${mark!=null?fmt(mark,0):'—'} · 成本 ${fmt(cost,0)}</div></div>`;
+    <div class="card"><div class="k">持仓合计浮盈</div><div class="v ${cls}">${pnl==null?'—':yen(pnl)}</div>
+      <div class="tiny">${POSITIONS.map(p=>{const mk=markOf(p);return p.symbol+' '+(mk!=null?fmt(mk,0):'—');}).join(' · ')}</div></div>`;
 }
 
 function renderTable(){
@@ -227,8 +246,9 @@ async function pullQuotes(){
     updatedAt:d.updatedAt||shanghaiNow().label+' Asia/Shanghai',
     source:d.source||'sina',
     contracts:d.contracts,
-    position:POSITION
+    positions:POSITIONS
   };
+  applyHeldFlags();
   live=true;
   renderAll();
 }

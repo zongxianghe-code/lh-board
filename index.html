@@ -10,7 +10,7 @@
 <meta http-equiv="Expires" content="0"/>
 <meta name="apple-mobile-web-app-title" content="生猪LH"/>
 <title>生猪 LH</title>
-<link rel="manifest" href="manifest.json?v=202611241030"/>
+<link rel="manifest" href="manifest.json?v=202611242148"/>
 <style>
 :root{--bg:#0b1220;--card:#162033;--text:#eef3fb;--muted:#9aa8bf;--win:#3dd68c;--loss:#f07178;--warn:#ffb454;--line:#2a3a55;--accent:#59a5ff;--blue:#3b82f6;--head:#1a2740;--sug:#f07178}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -75,7 +75,7 @@ svg.curve{width:100%;height:auto;display:block;background:#0f1828;border-radius:
 <div class="card note">联动「生猪期货相关」日简报；本页仅展示行情与持仓浮盈，非投资建议。</div>
 
 <script>
-const APP_VER='202611241030';
+const APP_VER='202611242148';
 const FALLBACK={
   updatedAt:'2026-11-06 15:05 Asia/Shanghai',
   source:'cache',
@@ -88,10 +88,9 @@ const FALLBACK={
     {symbol:'LH2709',last:12315,open:12450,high:12490,low:12250,settle:12345,change:-30,changePct:-0.24,volume:40103,oi:13801,bid:12315,ask:12320,isMain:false,isPosition:false},
     {symbol:'LH0',last:9195,open:9115,high:9250,low:9060,settle:9175,change:20,changePct:0.22,volume:173362,oi:142944,bid:9190,ask:9195,isMain:false,isPosition:false}
   ],
-  position:{symbol:'LH2705',side:'long',lots:2,cost:10520,multiplier:16},
+  position:{symbol:'LH2705',side:'long',lots:1,cost:10270,multiplier:16},
   positions:[
     {symbol:'LH2705',side:'long',lots:1,cost:10270,multiplier:16,date:'2026-11-20'},
-    {symbol:'LH2705',side:'long',lots:1,cost:10770,multiplier:16,date:'2026-11-24',time:'09:13:44'},
     {symbol:'LH2703',side:'long',lots:1,cost:9170,multiplier:16,date:'2026-11-20'}
   ]
 };
@@ -99,10 +98,10 @@ const FALLBACK={
 /** 持仓以页面常量为准（不读 quotes.json 的 position，避免脚本滞后）。
  *  原 LH2705 多 7 手 @12000；2026-11-19 卖平 5 手，2026-11-20 余 2 手按 10370 平完，
  *  再开 LH2705 多 1 手 @10270、LH2703 多 1 手 @9170。
- *  2026-11-24 09:13:44 再买开 LH2705 1 手 @10770；2705 现 2 手，加权成本 10520。2703 不动。 */
+ *  2026-11-24 09:13:44 买开的 LH2705 1 手 @10770 已于当日按 10800 卖平（时间未提供，不记）。
+ *  剩余：LH2705 多 1 手 @10270（11-20）、LH2703 多 1 手 @9170（11-20）。不要用加权成本 10520。 */
 const POSITIONS=[
   {symbol:'LH2705',side:'long',lots:1,cost:10270,multiplier:16,date:'2026-11-20'},
-  {symbol:'LH2705',side:'long',lots:1,cost:10770,multiplier:16,date:'2026-11-24',time:'09:13:44'},
   {symbol:'LH2703',side:'long',lots:1,cost:9170,multiplier:16,date:'2026-11-20'},
 ];
 const POS_SYMS=new Set(POSITIONS.map(p=>p.symbol));
@@ -129,6 +128,7 @@ const CLOSED=[
   {date:'2026-11-19', time:'11:16:45', symbol:'LH2705', side:'long', cost:12000, lots:1, exit:10375},
   {date:'2026-11-19', time:'11:16:45', symbol:'LH2705', side:'long', cost:12000, lots:1, exit:10375},
   {date:'2026-11-20', time:'10:11', symbol:'LH2705', side:'long', cost:12000, lots:2, exit:10370},
+  {date:'2026-11-24', time:'', symbol:'LH2705', side:'long', cost:10770, lots:1, exit:10800},
 ];
 function realizedOf(T){const m=T.multiplier||16;return Math.round((T.side==='long'?1:-1)*(T.exit-T.cost)*T.lots*m);}
 function realizedTotal(){return CLOSED.reduce((a,T)=>a+realizedOf(T),0);}
@@ -197,7 +197,7 @@ function renderPos(){
     <div class="row"><span>未实现合计</span><strong class="${cls}">${pnl==null?'—':yen(pnl)}</strong></div>
     <div class="row"><span>累计已实现（已平 ${CLOSED.reduce((a,T)=>a+T.lots,0)} 手）</span><strong class="${realizedTotal()>=0?'win':'loss'}">${yen(realizedTotal())}</strong></div>
     <div class="row"><span>合计（已实现+浮动）</span><strong class="${combined>=0?'win':'loss'}">${yen(combined)}</strong></div>
-    ${CLOSED.map(T=>`<div class="row"><span class="tiny">${T.date} ${T.time} 卖平 ${T.symbol} ${T.lots} 手</span><span class="tiny">开 ${T.cost} · 平 ${T.exit} · <strong class="${realizedOf(T)>=0?'win':'loss'}">${yen(realizedOf(T))}</strong></span></div>`).join('')}
+    ${CLOSED.map(T=>`<div class="row"><span class="tiny">${fillStamp(T)} 卖平 ${T.symbol} ${T.lots} 手</span><span class="tiny">开 ${T.cost} · 平 ${T.exit} · <strong class="${realizedOf(T)>=0?'win':'loss'}">${yen(realizedOf(T))}</strong></span></div>`).join('')}
     <div class="note">公式：(标记 − 成本) × 16 吨/手 × 手数。每笔每涨跌 100 元/吨 ≈ ¥1,600。</div>`;
 
   const main=bySym('LH2701')||(snap.contracts||[]).find(x=>x.isMain);

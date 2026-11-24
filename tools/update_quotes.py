@@ -17,11 +17,25 @@ TZ = ZoneInfo("Asia/Shanghai")
 MONTHS = ["2611", "2701", "2703", "2705", "2707", "2709"]
 CODES = [f"nf_LH{m}" for m in MONTHS] + ["nf_LH0"]
 
-# 页面持仓以 index.html 的 POSITIONS 常量为准；这里写入 quotes.json 供备份/兼容
+# 页面持仓以 index.html 的 POSITIONS 常量为准；这里写入 quotes.json 供备份/兼容。
+# 勿在例程里改成本；2026-11-24 09:13:44 追加 LH2705 买开 1 手 @10770，现 2 手加权 10520。
 POSITIONS = [
-    {"symbol": "LH2705", "side": "long", "lots": 1, "cost": 10270, "multiplier": 16},
-    {"symbol": "LH2703", "side": "long", "lots": 1, "cost": 9170, "multiplier": 16},
+    {"symbol": "LH2705", "side": "long", "lots": 1, "cost": 10270, "multiplier": 16, "date": "2026-11-20"},
+    {"symbol": "LH2705", "side": "long", "lots": 1, "cost": 10770, "multiplier": 16, "date": "2026-11-24", "time": "09:13:44"},
+    {"symbol": "LH2703", "side": "long", "lots": 1, "cost": 9170, "multiplier": 16, "date": "2026-11-20"},
 ]
+
+
+def position_summary(symbol: str) -> dict:
+    fills = [p for p in POSITIONS if p["symbol"] == symbol]
+    lots = sum(p["lots"] for p in fills)
+    return {
+        "symbol": symbol,
+        "side": fills[0]["side"],
+        "lots": lots,
+        "cost": sum(p["cost"] * p["lots"] for p in fills) / lots,
+        "multiplier": fills[0]["multiplier"],
+    }
 
 
 def fetch(lst: str) -> str:
@@ -125,7 +139,8 @@ def main() -> None:
         "source": "sina",
         "contracts": contracts,
         "positions": POSITIONS,
-        "position": POSITIONS[0],
+        # legacy 单笔字段：LH2705 汇总 2 手加权成本 10520，避免看起来仍是 1 手 @10270
+        "position": position_summary("LH2705"),
     }
     OUT.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     marks = {c["symbol"]: c["last"] for c in contracts}

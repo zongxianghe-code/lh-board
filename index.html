@@ -75,14 +75,14 @@ svg.curve{width:100%;height:auto;display:block;background:#0f1828;border-radius:
 <div class="card note">联动「生猪期货相关」日简报；本页仅展示行情与持仓浮盈，非投资建议。</div>
 
 <script>
-const APP_VER='202611271021';
+const APP_VER='202611271410';
 const FALLBACK={
   updatedAt:'2026-11-06 15:05 Asia/Shanghai',
   source:'cache',
   contracts:[
     {symbol:'LH2611',last:8045,open:8035,high:8045,low:8035,settle:8040,change:5,changePct:0.06,volume:32,oi:2,bid:8000,ask:8500,isMain:false,isPosition:false},
     {symbol:'LH2701',last:9195,open:9115,high:9250,low:9060,settle:9175,change:20,changePct:0.22,volume:173362,oi:142944,bid:9190,ask:9195,isMain:true,isPosition:false},
-    {symbol:'LH2703',last:9160,open:9060,high:9195,low:9035,settle:9135,change:25,changePct:0.27,volume:161150,oi:62419,bid:9160,ask:9165,isMain:false,isPosition:true},
+    {symbol:'LH2703',last:9160,open:9060,high:9195,low:9035,settle:9135,change:25,changePct:0.27,volume:161150,oi:62419,bid:9160,ask:9165,isMain:false,isPosition:false},
     {symbol:'LH2705',last:10065,open:10030,high:10125,low:9980,settle:10050,change:15,changePct:0.15,volume:63780,oi:20289,bid:10055,ask:10065,isMain:false,isPosition:true},
     {symbol:'LH2707',last:11220,open:11285,high:11350,low:11170,settle:11230,change:-10,changePct:-0.09,volume:44765,oi:10575,bid:11215,ask:11220,isMain:false,isPosition:false},
     {symbol:'LH2709',last:12315,open:12450,high:12490,low:12250,settle:12345,change:-30,changePct:-0.24,volume:40103,oi:13801,bid:12315,ask:12320,isMain:false,isPosition:false},
@@ -90,8 +90,7 @@ const FALLBACK={
   ],
   position:{symbol:'LH2705',side:'long',lots:1,cost:10270,multiplier:16},
   positions:[
-    {symbol:'LH2705',side:'long',lots:1,cost:10270,multiplier:16,date:'2026-11-20'},
-    {symbol:'LH2703',side:'long',lots:1,cost:9350,multiplier:16,date:'2026-11-27',time:'09:27:06'}
+    {symbol:'LH2705',side:'long',lots:1,cost:10270,multiplier:16,date:'2026-11-20'}
   ]
 };
 
@@ -101,11 +100,10 @@ const FALLBACK={
  *  2026-11-24 09:13:44 买开的 LH2705 1 手 @10770 已于当日按 10800 卖平（时间未提供，不记）。
  *  2026-11-25 LH2703：买开 1 手 @9450 后按 9455 卖平（+¥80）；原 9170 那手按 9500 卖平（+¥5,280）。当日 2703 已全部平完（平仓时间未提供，不记）。
  *  2026-11-26 09:08:20 再买开 LH2703 1 手 @9450，已于当日 14:50:01 按 9480 卖平（+¥480）。
- *  2026-11-27 09:27:06 再买开 LH2703 1 手 @9350。
- *  剩余：LH2705 多 1 手 @10270（11-20）、LH2703 多 1 手 @9350（11-27）。 */
+ *  2026-11-27 09:27:06 再买开 LH2703 1 手 @9350，已于当日 14:03:41 按 9520 卖平（+¥2,720）。
+ *  剩余：LH2705 多 1 手 @10270（11-20）。 */
 const POSITIONS=[
   {symbol:'LH2705',side:'long',lots:1,cost:10270,multiplier:16,date:'2026-11-20'},
-  {symbol:'LH2703',side:'long',lots:1,cost:9350,multiplier:16,date:'2026-11-27',time:'09:27:06'},
 ];
 const POS_SYMS=new Set(POSITIONS.map(p=>p.symbol));
 function isHeld(sym){return POS_SYMS.has(sym);}
@@ -135,6 +133,7 @@ const CLOSED=[
   {date:'2026-11-25', time:'', symbol:'LH2703', side:'long', cost:9450, lots:1, exit:9455},
   {date:'2026-11-25', time:'', symbol:'LH2703', side:'long', cost:9170, lots:1, exit:9500},
   {date:'2026-11-26', time:'14:50:01', symbol:'LH2703', side:'long', cost:9450, lots:1, exit:9480},
+  {date:'2026-11-27', time:'14:03:41', symbol:'LH2703', side:'long', cost:9350, lots:1, exit:9520},
 ];
 function realizedOf(T){const m=T.multiplier||16;return Math.round((T.side==='long'?1:-1)*(T.exit-T.cost)*T.lots*m);}
 function realizedTotal(){return CLOSED.reduce((a,T)=>a+realizedOf(T),0);}
